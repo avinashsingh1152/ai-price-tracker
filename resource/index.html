@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Product Price Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f4f8;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+    }
+    .card {
+      background-color: #fafafa;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .card a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .card a:hover {
+      text-decoration: underline;
+    }
+    .generic-prompt {
+        background-color: #fff3cd; /* Light yellow */
+        border: 1px solid #ffeeba;
+        color: #856404;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .error-prompt {
+        background-color: #f8d7da; /* Light red */
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .generic-prompt button.suggested-variant-btn {
+        background-color: #6c757d; /* Grey for suggested buttons */
+        margin: 5px;
+        width: auto;
+        padding: 8px 15px;
+        display: inline-block;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .generic-prompt button.suggested-variant-btn:hover {
+        background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Global Product Price Tracker</h1>
+    <label for="country">Select Country:</label>
+    <select id="country">
+      <option value="US">United States</option>
+      <option value="IN">India</option>
+      <option value="AE">United Arab Emirates</option>
+      <option value="GB">United Kingdom</option>
+      <option value="CA">Canada</option>
+      <option value="DE">Germany</option>
+      <option value="FR">France</option>
+      <option value="AU">Australia</option>
+      <option value="BR">Brazil</option>
+      <option value="IT">Italy</option>
+      <option value="ES">Spain</option>
+      <option value="NL">Netherlands</option>
+      <option value="SG">Singapore</option>
+      <option value="SE">Sweden</option>
+      <option value="CH">Switzerland</option>
+      <option value="MX">Mexico</option>
+      <option value="RU">Russia</option>
+      <option value="ZA">South Africa</option>
+      <option value="JP">Japan</option>
+      <option value="KR">South Korea</option>
+      <option value="CN">China</option>
+      <option value="AR">Argentina</option>
+      <option value="BE">Belgium</option>
+      <option value="PL">Poland</option>
+      <option value="FI">Finland</option>
+      <option value="NO">Norway</option>
+      <option value="DK">Denmark</option>
+      <option value="IE">Ireland</option>
+      <option value="PT">Portugal</option>
+      <option value="NZ">New Zealand</option>
+      <option value="TH">Thailand</option>
+      <option value="PH">Philippines</option>
+      <option value="ID">Indonesia</option>
+      <option value="MY">Malaysia</option>
+      <option value="VN">Vietnam</option>
+      <option value="TR">Turkey</option>
+      <option value="EG">Egypt</option>
+      <option value="NG">Nigeria</option>
+      <option value="KE">Kenya</option>
+      <option value="IL">Israel</option>
+      <option value="SA">Saudi Arabia</option>
+      <option value="PK">Pakistan</option>
+      <option value="BD">Bangladesh</option>
+      <option value="AT">Austria</option>
+      <option value="CZ">Czech Republic</option>
+      <option value="GR">Greece</option>
+      <option value="HU">Hungary</option>
+      <option value="RO">Romania</option>
+      <option value="CL">Chile</option>
+    </select>
+
+    <label for="query">Enter Product Query:</label>
+    <input type="text" id="query" placeholder="e.g., iPhone 16 Pro, 128GB" />
+
+    <button onclick="fetchPrices()">Search Prices</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    async function fetchPrices(isSpecificFromSuggestion = false) {
+      const country = document.getElementById("country").value;
+      const queryInput = document.getElementById("query");
+      const query = queryInput.value;
+      const resultBox = document.getElementById("result");
+
+      const existingGenericPrompt = document.getElementById("genericPromptMessage");
+      if (existingGenericPrompt) {
+        existingGenericPrompt.remove();
+      }
+
+      resultBox.innerHTML = '<p>Loading...</p>';
+
+      const requestBody = {
+        country,
+        query,
+        specific: isSpecificFromSuggestion
+      };
+
+      console.log("Sending request with:", requestBody); // DEBUG: Log outgoing request
+
+      try {
+        const response = await fetch("/fetch-prices", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("HTTP error! status:", response.status, "Response text:", errorText); // DEBUG: Log HTTP errors
+            resultBox.innerHTML = `<p class="error-prompt">Error: Could not fetch prices. Status: ${response.status}. Please try again.</p>`;
+            return;
+        }
+
+        const data = await response.json();
+        console.log("Received data:", data); // DEBUG: Log received data
+        resultBox.innerHTML = "";
+
+        // --- Handle Generic Response from Backend ---
+        if (data.status === "generic") {
+          const genericPromptDiv = document.createElement("div");
+          genericPromptDiv.id = "genericPromptMessage";
+          genericPromptDiv.className = "generic-prompt";
+
+          const message = "Your query is too generic. Please select a more specific variant or refine your search:";
+
+          let suggestedVariantsHtml = '';
+          if (data.suggested_variants && data.suggested_variants.length > 0) {
+              suggestedVariantsHtml = `
+                  <p>Suggested variants for ${data.base_product || 'product'}:</p>
+                  <div class="suggested-variants-container">
+                      ${data.suggested_variants.map(v =>
+                          `<button class="suggested-variant-btn" onclick="selectSuggestedVariant('${v.replace(/'/g, "\\'")}')">${v}</button>`
+                      ).join('')}
+                  </div>
+              `;
+          }
+
+          genericPromptDiv.innerHTML = `
+            <p>${message}</p>
+            ${suggestedVariantsHtml}
+          `;
+          resultBox.appendChild(genericPromptDiv);
+          return;
+        }
+
+        // --- Handle Actual Search Results ---
+        if (!data.results || !Array.isArray(data.results) || data.results.length === 0) {
+          resultBox.innerHTML = '<p>No results found.</p>';
+          if (data.message) {
+              resultBox.innerHTML += `<p>Reason: ${data.message}</p>`;
+          }
+          console.log("No results or invalid results array."); // DEBUG
+          return;
+        }
+
+        // Check if all results are just warnings with no product data
+        const allResultsAreWarnings = data.results.every(item => item.productName === null && item.price === null && item.warning);
+
+        if (allResultsAreWarnings) {
+            resultBox.innerHTML = `
+                <div class="error-prompt">
+                    <p><strong>Warning: Failed to retrieve product details.</strong></p>
+                    <p>It seems there were errors fetching data from the sources. Please try again later or with a different query.</p>
+                    ${data.results[0]?.warning ? `<p><strong>Details:</strong> ${data.results[0].warning}</p>` : ''}
+                </div>
+            `;
+            console.log("All results are warnings, showing consolidated error."); // DEBUG
+            return;
+        }
+
+        // If not all results are just warnings, proceed to display individual product cards
+        data.results.forEach(item => {
+          // Extract site information from item.site, item.website, or the URL
+          const site = item.site || item.website || (item.url || item.link || '').split('/')[2];
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <p><strong>Website:</strong> ${site || 'N/A'}</p>
+            <p><strong>Product:</strong> ${item.productName || 'N/A'}</p>
+            <p><strong>Price:</strong> ${item.price || 'N/A'} ${item.currency || ''}</p>
+            ${item.url || item.link ? `<p><strong>URL:</strong> <a href="${item.url || item.link}" target="_blank">${item.url || item.link}</a></p>` : '<p>URL: N/A</p>'}
+            ${item.warning ? `<p style="color:red;"><strong>Warning:</strong> ${item.warning}</p>` : ''}
+          `;
+          resultBox.appendChild(card);
+          console.log("Appended card for:", item.productName); // DEBUG
+        });
+
+      } catch (error) {
+        console.error("Fetch error:", error); // DEBUG: Catch any network or parsing errors
+        resultBox.innerHTML = `<p class="error-prompt">An unexpected error occurred: ${error.message}. Please check console for details.</p>`;
+      }
+    }
+
+    function selectSuggestedVariant(variantText) {
+        const queryInput = document.getElementById("query");
+        queryInput.value = variantText;
+        fetchPrices(true);
+    }
+  </script>
+</body>
+</html>

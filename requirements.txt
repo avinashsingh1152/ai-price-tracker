@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+openai
+bs4
+requests
+duckduckgo_search
+pydantic
+jinja2
+python-dotenv
+beautifulsoup4
+langchain-community
+ddgs
