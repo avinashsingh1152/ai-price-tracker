@@ -1,42 +1,83 @@
 # AI Price Tracker
 
 ## Overview
-This project demonstrates an AI-powered price tracker that uses OpenAI agents to extract product information, find relevant e-commerce sites, and scrape product prices.
-
-## Limitations of LLM-Only Approach
-OpenAI's GPT models (and similar LLMs) cannot directly execute code, run `curl`, or fetch live data from the internet. All web requests and scraping must be performed by your Python code, which then passes the data (such as HTML) to the LLM for analysis.
-
-## For a More “Agentic” System
-If you want a more agentic system—where the AI can autonomously browse, search, and interact with the web—you should look into frameworks like:
-
-- [LangChain](https://python.langchain.com/docs/integrations/tools/browser/): Integrates LLMs with browser tools, allowing the agent to control a browser, click links, and extract data.
-- [AutoGPT](https://github.com/Significant-Gravitas/Auto-GPT): An open-source project that combines LLMs with real-world tool use, including web browsing, file system access, and more.
-- [CrewAI](https://github.com/joaomdmoura/crewAI): Another agentic framework for orchestrating LLMs and tools.
-
-These frameworks allow you to build agents that can:
-- Search the web
-- Click links and navigate pages
-- Extract structured data from real websites
-- Chain together reasoning and tool use
-
-**Note:** These systems still require your code to handle actual HTTP requests and browser automation. The LLM provides reasoning and decision-making, but does not execute code itself.
-
-## Example: Using LangChain for Web Browsing
-```python
-from langchain.tools import DuckDuckGoSearchRun
-search = DuckDuckGoSearchRun()
-result = search.run("iPhone 16 Pro Amazon US")
-print(result)
-```
-
-For more advanced use, see the [LangChain documentation](https://python.langchain.com/docs/integrations/tools/browser/).
+AI Price Tracker is a web application that uses OpenAI-powered agents to extract product information, find relevant e-commerce sites, and scrape product prices globally. It features a FastAPI backend and a simple HTML/JS frontend.
 
 ---
 
-## Usage
-See `curl_requests.md` for example API calls.
+## Features
+- Enter a product query and country to search for product prices across multiple e-commerce sites.
+- Uses LLMs to normalize queries, find relevant sites, and extract product/price data from HTML.
+- Handles generic and specific queries, and displays all results (including errors/warnings) in the UI.
+
+---
+
+## Setup Instructions
+
+### 1. Clone the Repository
+```bash
+git clone <your-repo-url>
+cd ai-price-tracker
+```
+
+### 2. Install Python Dependencies
+It is recommended to use a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 3. Set Up Environment Variables
+Create a `.env` file in the project root with your OpenAI API key (and optional scraping API keys):
+```
+OPENAI_API_KEY=your-openai-api-key
+SCRAPING_API_KEY=your-scrapingbee-api-key   # Optional, for scraping
+SCRAPERAPI_KEY=your-scraperapi-key          # Optional, fallback for scraping
+```
+**Do not commit your `.env` file or API keys to version control.**
+
+### 4. Run the Backend Server
+Start the FastAPI server using Uvicorn:
+```bash
+uvicorn main:app --reload
+```
+- The API will be available at: `http://localhost:8000/`
+- The frontend HTML page is at: `resource/index.html` (open in your browser)
+
+### 5. Using the Frontend
+- Open `resource/index.html` in your browser.
+- Enter a product query and select a country.
+- Click "Search Prices" to view results.
+
+### 6. Example API Usage
+You can also use `curl` to test the API:
+```bash
+curl -X POST http://localhost:8000/fetch-prices \
+  -H "Content-Type: application/json" \
+  -d '{"country": "US", "query": "iPhone 16 Pro, 128GB"}'
+```
+
+---
+
+## Troubleshooting
+- **No results or errors?**
+  - Check your API keys in `.env`.
+  - Ensure you have internet access.
+  - Some sites may block scraping; warnings will be shown in the UI.
+- **CORS issues?**
+  - If you want to serve the frontend via FastAPI, you can add a static files route in `main.py`.
+- **LLM errors?**
+  - Make sure your OpenAI API key is valid and has quota.
 
 ---
 
 ## Security
-- Do not commit your `.env` file or API keys to version control.
+- Never commit your `.env` or API keys.
+- This project is for demonstration and research purposes only.
+
+---
+
+## Credits
+- Built with FastAPI, OpenAI, BeautifulSoup, and DuckDuckGo Search.
+- See `requirements.txt` for all dependencies.
